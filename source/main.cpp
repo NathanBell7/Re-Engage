@@ -1164,6 +1164,10 @@ void area1(){
 
     int health_of_base = 1000;
 
+    int enemies_defeated = 0;
+
+    int enemies_spawned = 0;
+
     frame = 0;
 
     bool running = true;
@@ -1239,11 +1243,11 @@ void area1(){
                     (*enemy_iterator)->set_health((*enemy_iterator)->get_health()-(*projectile_iterator)->get_damage());//change health of enemy by damage of projectile
 
                     if((*projectile_iterator)->get_projectile_speed()<0){
-                        (*enemy_iterator)->set_all_x((*enemy_iterator)->get_x_position_centre()-10);
+                        (*enemy_iterator)->set_all_x((*enemy_iterator)->get_x_position_centre()-3);
                     }
 
                     else if (((*projectile_iterator)->get_projectile_speed()>0)&((*enemy_iterator)->get_x_position_centre()!=(256 - ((*enemy_iterator)->get_width())/2))){
-                        (*enemy_iterator)->set_all_x((*enemy_iterator)->get_x_position_centre()+10);
+                        (*enemy_iterator)->set_all_x((*enemy_iterator)->get_x_position_centre()+3);
                     }
 
                     if (((*enemy_iterator)->get_health()) <= 0){//if enemy health is less than 0, then it should no longer exist
@@ -1286,6 +1290,7 @@ void area1(){
 
             if (((*it)->get_exist())==false){
                 it = list_of_enemies.erase(it);
+                enemies_defeated += 1;
             }
             else{
                 ++it;
@@ -1299,7 +1304,7 @@ void area1(){
             player.update_jump_action();
         }
 
-        if(keysHeld() & KEY_B){
+        if(keysDown() & KEY_B){
             bool shooting = weapon.shoot_projectile();//handles delay and returns bool if shooting has occured
             if (shooting){
                 //if weapon is shooting a new projectile, create a new pointer object and add to list of projectiles and track delay until next shot
@@ -1435,12 +1440,19 @@ void area1(){
         }
 
 
-        if(frame%300 == 0){
-            Enemy *test_enemy = new Enemy(10,173,16,16,1,1,30);
+        if (enemies_spawned < 10){
 
-            list_of_enemies.insert(list_of_enemies.begin(),test_enemy);
+            if((frame%150 == 0)&(frame != 0)){
 
+                Enemy *test_enemy = new Enemy(10,173,16,20,1,1,30);
+
+                list_of_enemies.insert(list_of_enemies.begin(),test_enemy);
+
+                enemies_spawned += 1;
+
+            }
         }
+        
 
         if (health_of_base < 1){
             running = false;
