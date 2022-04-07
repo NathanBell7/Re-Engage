@@ -55,6 +55,7 @@ glImage Platform_Type_1[1];
 
 //256x192 pixels
 
+//---------------------------------------LoadSprites class----------------------------------------//
 
 class LoadSprites{
 
@@ -226,6 +227,9 @@ class LoadSprites{
 
 
 };
+
+
+class Background{};
 
 
 //----------------------------------------player class----------------------------------------//
@@ -1047,6 +1051,41 @@ void Vblank() {
 }
 
 
+void new_screen_brightness_decrease(){
+    int starting_brightness = 0;
+    int time_delay = 1000000;
+    int current_time;
+    for (int i = 0; i<16; i++){
+        setBrightness(1,starting_brightness);
+        starting_brightness -= 1;
+        current_time = 0;
+        cpuStartTiming(0);
+        while(current_time < time_delay){
+            current_time = cpuGetTiming();
+        }
+        cpuEndTiming();
+    }
+    
+
+}
+
+void new_screen_brightness_increase(){
+    int starting_brightness = -16;
+    int time_delay = 1000000;
+    int current_time;
+    for (int i = 0; i<16; i++){
+        setBrightness(1,starting_brightness);
+        starting_brightness += 1;
+        current_time = 0;
+        cpuStartTiming(0);
+        while(current_time < time_delay){
+            current_time = cpuGetTiming();
+        }
+        cpuEndTiming();
+    }
+}
+
+
 
 //----------------------------------------main menu method----------------------------------------//
 
@@ -1056,16 +1095,22 @@ int menu(){
 
     bool running = true;
 
+    bool option_chosen = false;
+
     Cursor cursor(58,144);
+
+    frame = 0;
 
     while(running){
 
-        
+        if (frame == 10){
+            new_screen_brightness_increase();
+        }
 
         scanKeys();
 
         if(keysDown() & KEY_A){
-            running = false;
+            option_chosen = true;
         }
 
         //check if left key is pressed
@@ -1095,8 +1140,6 @@ int menu(){
 
         glBegin2D();
 
-        
-
         glSprite(0,0,GL_FLIP_NONE,Background_Main_Menu);
 
         glSprite(26, 136,GL_FLIP_NONE,Area_1_Button);//display area 1 button
@@ -1111,11 +1154,18 @@ int menu(){
 
         glFlush(0);
 
+        Vblank();
+
         swiWaitForVBlank();//wait for next frame
 
-        consoleClear();//clear bottom screen of text
+        if (option_chosen == true){
+            running = false;
+            new_screen_brightness_decrease();
+        }
 
     }
+
+    //get location of cursor and depending on what it is then return a different integer
 
     int cursor_location = cursor.get_x_position_centre();
 
@@ -1173,12 +1223,11 @@ void area1(){
 
     Platform platform3(128,116,30,10);
 
-
     char starting_direction = 'l';
 
-    int starting_x = 128;
+    int starting_x = 176;
 
-    int starting_y = 166;
+    int starting_y = 163;
 
     bool tracking_weapon_delay = false;
 
@@ -1210,15 +1259,21 @@ void area1(){
     frame = 0;
 
     bool running = true;
+
+    bool area_failed = false;
+
     
 	while(running) {
+
+        if (frame == 10){
+            new_screen_brightness_increase();
+        }
 
         glBegin2D();
 
         glSprite(0, 0,GL_FLIP_NONE,Area_1_BG);
 
         glEnd2D();
-
 
         //debug text
         iprintf("bottom of player model %i",player.get_y_position_bottom());
@@ -1257,6 +1312,8 @@ void area1(){
         platform3.display_position();
 
         player.display_position();
+
+        
 
         //update projectile objects via pointer
 
@@ -1367,7 +1424,7 @@ void area1(){
         }
 
         if(keysDown() & KEY_START){
-            running = false;
+            area_failed = true;
         }
 
         if(keysDown() & KEY_R){
@@ -1490,7 +1547,7 @@ void area1(){
         
 
         if (health_of_base < 1){
-            running = false;
+            area_failed = true;
         }
 
 
@@ -1501,6 +1558,11 @@ void area1(){
         swiWaitForVBlank();//wait for next frame
 
         consoleClear();//clear bottom screen of text
+
+        if (area_failed == true){
+            running = false;
+            new_screen_brightness_decrease();
+        }
 
     }
 
@@ -1589,7 +1651,6 @@ int main(void) {
     vramSetBankE(VRAM_E_TEX_PALETTE);
 
     LoadSprites();
-
     
     while(1){
 
@@ -1597,6 +1658,7 @@ int main(void) {
         int cursor_location = menu();
 
         if (cursor_location == 1){
+            
             area1();
         }
 
