@@ -54,6 +54,12 @@ LIBS	:= -lnds9
 #---------------------------------------------------------------------------------
 LIBDIRS	:=	$(LIBNDS)
 
+GAME_TITLE	:=	Re-Engage
+GAME_SUBTITLE1	:=	Dev CG
+GAME_SUBTITLE2	:=	
+
+GAME_ICON	:=	$(CURDIR)/../icon.bmp
+
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
