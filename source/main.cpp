@@ -275,6 +275,7 @@ class Player{
         int y_position_bottom;
         bool on_platform = true;
         char direction_facing ;
+        int hitbox_width = 7;
 
 
     public:
@@ -282,8 +283,8 @@ class Player{
         Player(int x, int y, char facing){
 
             this->x_position_centre = x;
-            this->x_position_left = x_position_centre-16;
-            this->x_position_right = x_position_centre+16;
+            this->x_position_left = x_position_centre-hitbox_width;
+            this->x_position_right = x_position_centre+hitbox_width;
 
             this->y_position_centre = y;
             this->y_position_top = y_position_centre-16;
@@ -291,6 +292,10 @@ class Player{
 
             this->direction_facing = facing;
 
+        }
+
+        int get_hitbox_width(){
+            return hitbox_width;
         }
 
         bool get_falling(){
@@ -329,9 +334,7 @@ class Player{
 
             glBegin2D();/*opens gl for 2d creation*/
 
-            //glBoxFilled(x_position_left,y_position_top,x_position_right,y_position_bottom,RGB15(255, 255, 0));
-
-            glSprite(x_position_left, y_position_top,GL_FLIP_NONE,&Player_Character[0]);
+            glSprite(x_position_left-3, y_position_top,GL_FLIP_NONE,&Player_Character[0]);
 
             glEnd2D();/*ends gl for 2d creation*/
 
@@ -352,8 +355,8 @@ class Player{
 
         void set_all_x(int new_value){
             x_position_centre = new_value;
-            x_position_left = new_value-16;
-            x_position_right = new_value+16;
+            x_position_left = new_value-hitbox_width;
+            x_position_right = new_value+hitbox_width;
         }
 
          void update_jump_action(){
@@ -1606,11 +1609,11 @@ void area1(){
         //collision detection for walls
 
         if(left_wall.detect_collision_player(player)==true){
-            player.set_all_x(left_wall.get_x_position_right()+17);
+            player.set_all_x(left_wall.get_x_position_right()+player.get_hitbox_width()+1);
         }
 
         if(right_wall.detect_collision_player(player)==true){
-            player.set_all_x(right_wall.get_x_position_left()-17);
+            player.set_all_x(right_wall.get_x_position_left()-player.get_hitbox_width()-1);
         }
 
         //enemy spawning logic
