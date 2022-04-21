@@ -250,9 +250,6 @@ class LoadSprites{
 };
 
 
-class Background{};
-
-
 //----------------------------------------player class----------------------------------------//
 
 
@@ -282,6 +279,7 @@ class Player{
         int sprite_display_y;
         int spritesheet_section = 0;
         int frame_cap;
+        int player_speed = 4;
 
 
     public:
@@ -291,7 +289,7 @@ class Player{
             this->x_position_centre = x;
             this->x_position_left = x_position_centre - hitbox_width;
             this->x_position_right = x_position_centre + hitbox_width;
-            this->sprite_display_x = x_position_centre - hitbox_width - 3;
+            
 
             this->y_position_centre = y;
             this->y_position_top = y_position_centre - 16;
@@ -300,11 +298,13 @@ class Player{
 
             this->direction_facing = facing;
 
-            if (direction_facing == 'l'){
-                this->frame_cap = 9;
+            if (direction_facing == 'r'){
+                this->frame_cap = 4;
+                this->sprite_display_x = x_position_centre - hitbox_width - 3;
             }
             else{
-                this->frame_cap = 4;
+                this->frame_cap = 9;
+                this->sprite_display_x = x_position_centre - hitbox_width - 10;
             }
             
 
@@ -390,12 +390,18 @@ class Player{
             x_position_centre = new_value;
             x_position_left = new_value-hitbox_width;
             x_position_right = new_value+hitbox_width;
-            sprite_display_x = new_value-hitbox_width;
+            if (direction_facing == 'r'){
+                sprite_display_x = new_value-hitbox_width - 3;
+            }
+            else{
+                sprite_display_x = new_value-hitbox_width - 10;
+            }
+            
         }
 
          void update_jump_action(){
             if ((falling == false) && (jumping == false)){
-                //onlu jump when not falling or jumping
+                //only jump when not falling or jumping
                 jumping = true;
                 velocity = GRAVITY;
 
@@ -407,6 +413,7 @@ class Player{
             if(moving_left==false){
                 moving_right = new_value;
                 direction_facing = 'r';
+
             }    
         }
 
@@ -421,11 +428,11 @@ class Player{
         void character_movement(){
 
             if(moving_left == true){
-                set_all_x(x_position_centre-4);
+                set_all_x(x_position_centre-player_speed);
             }
 
             if(moving_right == true){
-                set_all_x(x_position_centre+4);
+                set_all_x(x_position_centre+player_speed);
             }
 
             if (jumping == true){
@@ -453,12 +460,14 @@ class Player{
                 //start idle right
                 frame_cap = 4;
                 spritesheet_section = 0;
+                sprite_display_x = x_position_centre - hitbox_width - 3;
             }
             
             if ((moving_right == false) & (moving_left == false) & (direction_facing == 'l')){
                 //start idle left
                 frame_cap = 9;
                 spritesheet_section = 1;
+                sprite_display_x = x_position_centre - hitbox_width - 10;
             }
 
             if ((moving_right == true) & (moving_left == false)){
@@ -738,7 +747,6 @@ class Weapon{
             bool shooting = false;
 
             if ((time_until_next_projectile == 0)&(current_projectile_amount > 0)&(reloading == false)){
-                //Projectile projectile(int x_position, int y_position, int damage, int projectile_speed, char direction_facing);
                 time_until_next_projectile = projectile_delay;
                 current_projectile_amount -= 1;
                 shooting = true;
@@ -756,7 +764,7 @@ class Weapon{
                 return new_projectile;
             }
             else{
-                Projectile *new_projectile = new Projectile(projectile_speed,direction_facing, x_position_centre-4,y_position_centre,10,5,damage);
+                Projectile *new_projectile = new Projectile(projectile_speed,direction_facing, x_position_centre-20,y_position_centre-1,10,5,damage);
                 return new_projectile;
             }
 
@@ -1232,6 +1240,7 @@ void Vblank() {
 
 
 void new_screen_brightness_decrease(){
+    //increase brightnes from 0 to -16 gradually
     int starting_brightness = 0;
     int time_delay = 1000000;
     int current_time;
@@ -1250,6 +1259,7 @@ void new_screen_brightness_decrease(){
 }
 
 void new_screen_brightness_increase(){
+    //increase brightnes from -16 to 0 gradually
     int starting_brightness = -16;
     int time_delay = 1000000;
     int current_time;
@@ -1421,7 +1431,7 @@ void area1(){
 
     //int projectile_speed, int damage, int projectile_delay, int reload_time, int direction_facing, int projectile_capacity, int x_position, int y_position
 
-    Weapon weapon(10,10,10,100,'r',12,starting_x,starting_y+4,"ranged");
+    Weapon weapon(10,10,10,100,'l',12,starting_x,starting_y+4,"ranged");
 
     //create lists for pointers to projectiles and enemies
 
@@ -1447,23 +1457,26 @@ void area1(){
     
 	while(running) {
 
+
+
+
+
         if (frame == 10){
+            //increase brightness to normal when entering area
             new_screen_brightness_increase();
         }
+
+        
+
+    
+
+        //display sprites
 
         glBegin2D();
 
         glSprite(0, 0,GL_FLIP_NONE,Area_1_BG);
 
         glEnd2D();
-
-        //debug text
-        
-        
-
-        scanKeys();
-
-        //display sprites
 
         platform1.display_position();
 
@@ -1474,6 +1487,8 @@ void area1(){
         player.display_position();
 
         
+
+
 
         //update projectile objects via pointer
 
@@ -1552,6 +1567,8 @@ void area1(){
 
 
 
+
+
         //logic for boss
 
         for(std::list<MetalBoss*>::iterator it = boss_array.begin(); it != boss_array.end();){
@@ -1562,7 +1579,13 @@ void area1(){
             
         }
 
-        //checking what keys have been pressed
+
+
+
+        
+        //check what buttons are being pressed
+
+        scanKeys();
 
         if(keysDown() & KEY_A){
             player.update_jump_action();
@@ -1613,10 +1636,17 @@ void area1(){
             
         }
 
+
+
+
+
+        //move player and weapon with player
+
         weapon.move_weapon(player.get_centre_x(),player.get_centre_y());
 
         player.character_movement();
 
+        //update frames for player sprite animationm
         if (frame % 10 == 0){
             player.sprite_frame_update();
         }
@@ -1624,7 +1654,6 @@ void area1(){
         
         
 
-        
 
         //checking if player can shoot another bullet via delay
 
@@ -1655,6 +1684,8 @@ void area1(){
                 weapon.reload_magazine();
             }
         }
+
+
 
         
 
@@ -1707,6 +1738,10 @@ void area1(){
                 }
         }
 
+
+
+
+
         //collision detection for walls
 
         if(left_wall.detect_collision_player(player)==true){
@@ -1717,17 +1752,21 @@ void area1(){
             player.set_all_x(right_wall.get_x_position_left()-player.get_hitbox_width()-1);
         }
 
+
+
+
+
         //enemy spawning logic
 
         if (enemies_spawned < 10){
 
             if((frame%150 == 0)&(frame != 0)){
 
-                //Enemy *new_enemy = new Enemy(-30,173,16,20,1,1,30);
+                Enemy *new_enemy = new Enemy(-30,173,16,20,1,1,30);
 
-                //list_of_enemies.insert(list_of_enemies.begin(),new_enemy);
+                list_of_enemies.insert(list_of_enemies.begin(),new_enemy);
 
-                //enemies_spawned += 1;
+                enemies_spawned += 1;
 
             }
         }
