@@ -274,8 +274,14 @@ class Player{
         int y_position_top;
         int y_position_bottom;
         bool on_platform = true;
-        char direction_facing ;
+        char direction_facing;
         int hitbox_width = 7;
+        int hitbox_height = 16;
+        int sprite_frame = 5;
+        int sprite_display_x;
+        int sprite_display_y;
+        int spritesheet_section = 0;
+        int frame_cap;
 
 
     public:
@@ -283,14 +289,24 @@ class Player{
         Player(int x, int y, char facing){
 
             this->x_position_centre = x;
-            this->x_position_left = x_position_centre-hitbox_width;
-            this->x_position_right = x_position_centre+hitbox_width;
+            this->x_position_left = x_position_centre - hitbox_width;
+            this->x_position_right = x_position_centre + hitbox_width;
+            this->sprite_display_x = x_position_centre - hitbox_width - 3;
 
             this->y_position_centre = y;
-            this->y_position_top = y_position_centre-16;
-            this->y_position_bottom = y_position_centre+16;
+            this->y_position_top = y_position_centre - 16;
+            this->y_position_bottom = y_position_centre + 16;
+            this->sprite_display_y = y_position_centre - 16;
 
             this->direction_facing = facing;
+
+            if (direction_facing == 'l'){
+                this->frame_cap = 9;
+            }
+            else{
+                this->frame_cap = 4;
+            }
+            
 
         }
 
@@ -330,22 +346,39 @@ class Player{
             return jumping;
         }
 
+        bool get_moving_left(){
+            return moving_left;
+        }
+
+        bool get_moving_right(){
+            return moving_right;
+        }
+
+        bool get_direction_facing(){
+            return direction_facing;
+        }
+
         void display_position(){
 
             glBegin2D();/*opens gl for 2d creation*/
 
-            glSprite(x_position_left-3, y_position_top,GL_FLIP_NONE,&Player_Character[0]);
+            glSprite(sprite_display_x, sprite_display_y,GL_FLIP_NONE,&Player_Character[sprite_frame]);
 
             glEnd2D();/*ends gl for 2d creation*/
 
         }
 
+        void set_sprite_frame(int new_value){
+            sprite_frame = new_value;
+        }
+
         void set_all_y(int new_value){
 
             y_position_centre = new_value;
-            y_position_top = new_value-16;
-            y_position_bottom = new_value+16;
-
+            y_position_top = new_value-hitbox_height;
+            y_position_bottom = new_value+hitbox_height;
+            sprite_display_y = new_value-hitbox_height;
+            
 
         }
 
@@ -357,6 +390,7 @@ class Player{
             x_position_centre = new_value;
             x_position_left = new_value-hitbox_width;
             x_position_right = new_value+hitbox_width;
+            sprite_display_x = new_value-hitbox_width;
         }
 
          void update_jump_action(){
@@ -409,6 +443,77 @@ class Player{
                 velocity -= velocity_increment;
             }
         }
+
+        void sprite_frame_update(){
+
+            sprite_frame += 1;
+            
+
+            if ((moving_right == false) & (moving_left == false) & (direction_facing == 'r')){
+                //start idle right
+                frame_cap = 4;
+                spritesheet_section = 0;
+            }
+            
+            if ((moving_right == false) & (moving_left == false) & (direction_facing == 'l')){
+                //start idle left
+                frame_cap = 9;
+                spritesheet_section = 1;
+            }
+
+            if ((moving_right == true) & (moving_left == false)){
+                //start moving right
+                frame_cap = 15;
+                spritesheet_section = 2;
+            }
+
+            if ((moving_right == false) & (moving_left == true)){
+                //start moving left
+                frame_cap = 21;
+                spritesheet_section = 3;
+            }
+
+            if (spritesheet_section == 0){
+                if (sprite_frame > frame_cap){
+                    sprite_frame = 0;
+                }
+            }
+
+            if (spritesheet_section == 1){
+                if (sprite_frame > frame_cap){
+                    sprite_frame = 5;
+                }
+                
+            }
+            
+            if (spritesheet_section == 2){
+                if (sprite_frame > frame_cap){
+                    sprite_frame = 10;
+                }
+                
+            }
+
+            if (spritesheet_section == 3){
+                if (sprite_frame > frame_cap){
+                    sprite_frame = 16;
+                }
+                
+            }
+
+            
+            iprintf("sprite frame %i",sprite_frame);
+            iprintf("\n");
+            iprintf("moving_left %i",moving_left);
+            iprintf("\n");
+            iprintf("moving right %i",moving_right);
+            iprintf("\n");
+            iprintf("spritesheet section %i",spritesheet_section);
+            iprintf("\n");
+            //consoleClear();
+
+
+        }
+
 
 };
 
@@ -646,10 +751,14 @@ class Weapon{
 
         Projectile* create_projectile(){
 
-            Projectile *new_projectile = new Projectile(projectile_speed,direction_facing, x_position_centre,y_position_centre,10,5,damage);
-
-            return new_projectile;
-
+            if(direction_facing == 'r'){
+                Projectile *new_projectile = new Projectile(projectile_speed,direction_facing, x_position_centre+24,y_position_centre-1,10,5,damage);
+                return new_projectile;
+            }
+            else{
+                Projectile *new_projectile = new Projectile(projectile_speed,direction_facing, x_position_centre-4,y_position_centre,10,5,damage);
+                return new_projectile;
+            }
 
         }
 
@@ -1312,7 +1421,7 @@ void area1(){
 
     //int projectile_speed, int damage, int projectile_delay, int reload_time, int direction_facing, int projectile_capacity, int x_position, int y_position
 
-    Weapon weapon(10,10,10,100,'r',12,starting_x,starting_y,"ranged");
+    Weapon weapon(10,10,10,100,'r',12,starting_x,starting_y+4,"ranged");
 
     //create lists for pointers to projectiles and enemies
 
@@ -1349,30 +1458,8 @@ void area1(){
         glEnd2D();
 
         //debug text
-        iprintf("bottom of player model %i",player.get_y_position_bottom());
-        iprintf("\n");
-        iprintf("left of player model %i",player.get_x_position_left());
         
-        iprintf("\n");
-        iprintf("if player is falling %i",player.get_falling());
         
-        iprintf("\n");
-        iprintf("number of projectiles %i",weapon.get_current_projectile_amount());
-
-        iprintf("\n");
-        iprintf("time until next projectile %i",weapon.get_time_until_next_projectile());
-
-        iprintf("\n");
-        iprintf("time until reloaded %i",weapon.get_time_until_reloaded());
-
-        iprintf("\n");
-        iprintf("reloading %i",weapon.get_reloading());
-
-        iprintf("\n");
-        iprintf("number of projectiles %i",list_of_projectiles.size());
-
-        iprintf("\n");
-        iprintf("health of base %i",health_of_base);
 
         scanKeys();
 
@@ -1492,20 +1579,24 @@ void area1(){
             
         }
 
-        if(keysHeld() & KEY_LEFT){
+        if(keysDown() & KEY_LEFT){
             player.update_move_left_action(true);
+            player.set_sprite_frame(16);
         }
 
         if(keysUp() & KEY_LEFT){
             player.update_move_left_action(false);
+            player.set_sprite_frame(5);
         }
 
-        if(keysHeld() & KEY_RIGHT){
+        if(keysDown() & KEY_RIGHT){
             player.update_move_right_action(true);
+            player.set_sprite_frame(10);
         }
 
         if(keysUp() & KEY_RIGHT){
             player.update_move_right_action(false);
+            player.set_sprite_frame(0);
         }
 
         if(keysDown() & KEY_START){
@@ -1523,7 +1614,17 @@ void area1(){
         }
 
         weapon.move_weapon(player.get_centre_x(),player.get_centre_y());
+
         player.character_movement();
+
+        if (frame % 10 == 0){
+            player.sprite_frame_update();
+        }
+
+        
+        
+
+        
 
         //checking if player can shoot another bullet via delay
 
@@ -1622,11 +1723,11 @@ void area1(){
 
             if((frame%150 == 0)&(frame != 0)){
 
-                Enemy *new_enemy = new Enemy(-30,173,16,20,1,1,30);
+                //Enemy *new_enemy = new Enemy(-30,173,16,20,1,1,30);
 
-                list_of_enemies.insert(list_of_enemies.begin(),new_enemy);
+                //list_of_enemies.insert(list_of_enemies.begin(),new_enemy);
 
-                enemies_spawned += 1;
+                //enemies_spawned += 1;
 
             }
         }
@@ -1643,6 +1744,8 @@ void area1(){
         if (health_of_base < 1){
             area_failed = true;
         }
+
+        
 
 
         glFlush(0);
