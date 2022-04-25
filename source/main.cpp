@@ -529,17 +529,6 @@ class Player{
                 
             }
 
-            
-            iprintf("sprite frame %i",sprite_frame);
-            iprintf("\n");
-            iprintf("moving_left %i",moving_left);
-            iprintf("\n");
-            iprintf("moving right %i",moving_right);
-            iprintf("\n");
-            iprintf("spritesheet section %i",spritesheet_section);
-            iprintf("\n");
-            //consoleClear();
-
 
         }
 
@@ -1198,31 +1187,87 @@ class MetalBoss{
         int right_arm_x_position_centre;
         int right_arm_y_position_centre;
 
-        bool left_arm_standby = true;
+
+        bool right_arm_alive = true;
         bool right_arm_standby = true;
+        int right_arm_up = 0;
 
         bool left_arm_alive = true;
-        bool right_arm_alive = true;
-
+        bool left_arm_standby = true;
+        int left_arm_up = 0;
+        
+        
         bool boss_alive = true;
 
         int sprite_y = 32;
 
         int sprite_x = 32;
 
+        int hitbox_y = 32;
+
+        int hitbox_x = 32;
+
+        int standby_y_coordinate = 64;
+
+        int standby_coordinate_variation = 16;
+
 
     public:
 
-        MetalBoss(int head_x, int head_y, int left_x, int left_y, int right_x, int right_y){
+        MetalBoss(){
 
-            this->head_x_position_centre = head_x;
-            this->head_y_position_centre = head_y;
+            this->head_x_position_centre = 128;
+            this->head_y_position_centre = 32;
 
-            this->left_arm_x_position_centre = left_x;
-            this->left_arm_y_position_centre = left_y;
+            this->left_arm_x_position_centre = 32;
+            this->left_arm_y_position_centre = standby_y_coordinate;
 
-            this->right_arm_x_position_centre = right_x;
-            this->right_arm_y_position_centre = right_y;
+            this->right_arm_x_position_centre = 224;
+            this->right_arm_y_position_centre = standby_y_coordinate;
+
+        }
+
+        void set_right_arm_standby(bool new_value){
+            right_arm_standby = new_value;
+        }
+
+        void set_left_arm_standby(bool new_value){
+            left_arm_standby = new_value;
+        }
+
+        void movement_calculations(){
+            if (right_arm_standby){
+                if (right_arm_up == 1){
+                    right_arm_y_position_centre -= 1;
+                    if (right_arm_y_position_centre < standby_y_coordinate-standby_coordinate_variation){
+                        right_arm_up = 0;
+                    }
+                }
+                else{
+                    right_arm_y_position_centre += 1;
+                    if (right_arm_y_position_centre > standby_y_coordinate+standby_coordinate_variation){
+                        right_arm_up = 1;
+                    }
+                }
+
+            }
+
+            if (left_arm_standby){
+                if (left_arm_up == 1){
+                    left_arm_y_position_centre -= 1;
+                    if (left_arm_y_position_centre < standby_y_coordinate-standby_coordinate_variation){
+                        left_arm_up = 0;
+                    }
+                }
+                else{
+                    left_arm_y_position_centre += 1;
+                    if (left_arm_y_position_centre > standby_y_coordinate+standby_coordinate_variation){
+                        left_arm_up = 1;
+                    }
+                }
+            }
+
+            iprintf("lefty%i",left_arm_y_position_centre);
 
         }
 
@@ -1233,25 +1278,25 @@ class MetalBoss{
 
             //head sprite
 
-            glBoxFilled(head_x_position_centre-sprite_x,//x left
-                        head_y_position_centre-sprite_y,//y top
-                        head_x_position_centre+sprite_x,//x right
-                        head_y_position_centre+sprite_y,//y bottom
+            glBoxFilled(head_x_position_centre-hitbox_x,//x left
+                        head_y_position_centre-hitbox_y,//y top
+                        head_x_position_centre+hitbox_x,//x right
+                        head_y_position_centre+hitbox_y,//y bottom
                         RGB15(0, 0, 255));//colour
 
             //left arm sprite
-            glBoxFilled(left_arm_x_position_centre-sprite_x,//x left
-                        left_arm_y_position_centre-sprite_y,//y top
-                        left_arm_x_position_centre+sprite_x,//x right
-                        left_arm_y_position_centre+sprite_y,//y bottom
+            glBoxFilled(left_arm_x_position_centre-hitbox_x,//x left
+                        left_arm_y_position_centre-hitbox_y,//y top
+                        left_arm_x_position_centre+hitbox_x,//x right
+                        left_arm_y_position_centre+hitbox_y,//y bottom
                         RGB15(0, 0, 255));//colour
 
 
             //right arm sprite
-            glBoxFilled(right_arm_x_position_centre-sprite_x,//x left
-                        right_arm_y_position_centre-sprite_y,//y top
-                        right_arm_x_position_centre+sprite_x,//x right
-                        right_arm_y_position_centre+sprite_y,//y bottom
+            glBoxFilled(right_arm_x_position_centre-hitbox_x,//x left
+                        right_arm_y_position_centre-hitbox_y,//y top
+                        right_arm_x_position_centre+hitbox_x,//x right
+                        right_arm_y_position_centre+hitbox_y,//y bottom
                         RGB15(0, 0, 255));//colour
 
             glEnd2D();
@@ -1488,6 +1533,8 @@ void area1(){
 
     bool area_failed = false;
 
+    consoleDemoInit();
+
     
 	while(running) {
 
@@ -1524,6 +1571,8 @@ void area1(){
 
         weapon.display_ammo_counter();
 
+
+        /*
         glBegin2D();
 
 
@@ -1534,7 +1583,7 @@ void area1(){
                     RGB15(0, 0, 255));//colour
 
         glEnd2D();
-
+        */
         
 
 
@@ -1545,9 +1594,6 @@ void area1(){
 
             (*projectile_iterator)->display_projectile();//show location
             (*projectile_iterator)->update_position();//move projectile
-
-            iprintf("\n");
-            iprintf("proj x %i",(*projectile_iterator)->get_x_position_centre());//print centre
 
             for(std::list<Enemy*>::iterator enemy_iterator = list_of_enemies.begin(); enemy_iterator != list_of_enemies.end();){
 
@@ -1590,9 +1636,6 @@ void area1(){
 
         for(std::list<Enemy*>::iterator it = list_of_enemies.begin(); it != list_of_enemies.end();){
 
-            iprintf("\n");
-            iprintf("enemy health%i",(*it)->get_health());
-
             (*it)->display_position();//show location
 
             if ((*it)->get_x_position_centre() != 256 - ((*it)->get_width())/2){
@@ -1623,6 +1666,8 @@ void area1(){
         for(std::list<MetalBoss*>::iterator it = boss_array.begin(); it != boss_array.end();){
 
             (*it)->display_position();//show location
+
+            (*it)->movement_calculations();//move boss as required
 
             ++it;
             
@@ -1822,11 +1867,11 @@ void area1(){
 
             if((frame%150 == 0)&(frame != 0)){
 
-                //Enemy *new_enemy = new Enemy(-30,173,16,20,1,1,30);
+                Enemy *new_enemy = new Enemy(-30,173,16,20,1,1,30);
 
-                //list_of_enemies.insert(list_of_enemies.begin(),new_enemy);
+                list_of_enemies.insert(list_of_enemies.begin(),new_enemy);
 
-                //enemies_spawned += 1;
+                enemies_spawned += 1;
 
             }
         }
@@ -1834,7 +1879,7 @@ void area1(){
         //boss spawning logic
 
         if ((enemies_defeated == 10)& (boss_array.size() == 0)){
-            MetalBoss *boss = new MetalBoss(128,30,30,96,226,96);
+            MetalBoss *boss = new MetalBoss();
             boss_array.insert(boss_array.begin(),boss);
         }
         
