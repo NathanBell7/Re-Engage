@@ -1267,8 +1267,6 @@ class MetalBoss{
                 }
             }
 
-            iprintf("lefty%i",left_arm_y_position_centre);
-
         }
 
 
@@ -1532,8 +1530,6 @@ void area1(){
     bool running = true;
 
     bool area_failed = false;
-
-    consoleDemoInit();
 
     
 	while(running) {
