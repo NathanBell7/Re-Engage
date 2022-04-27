@@ -1574,6 +1574,10 @@ void area1(){
 
         glSprite(0, 0,GL_FLIP_NONE,Area_1_BG);
 
+        if (weapon.get_reloading()==true){
+            glSprite(73, 8,GL_FLIP_NONE,Reload_Sprite);
+        }
+
         glEnd2D();
 
         platform1.display_position();
@@ -1702,7 +1706,7 @@ void area1(){
             player.update_jump_action();
         }
 
-        if(keysDown() & KEY_B){
+        if(keysHeld() & KEY_B){
             bool shooting = weapon.shoot_projectile();//handles delay and returns bool if shooting has occured
             if (shooting){
                 //if weapon is shooting a new projectile, create a new pointer object and add to list of projectiles and track delay until next shot
@@ -1739,7 +1743,7 @@ void area1(){
         }
 
         if(keysDown() & KEY_R){
-            if (weapon.get_current_projectile_amount() != 12){
+            if (weapon.get_current_projectile_amount() != 14){
                 if (tracking_reload == false){
                     weapon.start_reload_timer();
                     tracking_reload = true;
