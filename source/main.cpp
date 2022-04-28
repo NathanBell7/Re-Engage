@@ -10,6 +10,8 @@
 
 #include <cmath>
 
+#include <cstdlib>
+
 #include "shuttle.h"
 
 #include "area_1_button.h"
@@ -1208,15 +1210,27 @@ class MetalBoss{
         int right_arm_x_position_centre;
         int right_arm_y_position_centre;
 
+        bool left_arm_alive = true;
+        bool left_arm_standby = true;
+        bool left_arm_slam_movement = false;
+        bool left_arm_laser_movement = false;
+        bool left_arm_revert_standby_move = false;
+        int left_arm_up = 0;
+        int left_arm_x_lock_on;
+        int left_arm_y_lock_on;
+        
+
 
         bool right_arm_alive = true;
         bool right_arm_standby = true;
+        bool right_arm_slam_movement = false;
+        bool right_arm_laser_movement = false;
+        bool right_arm_revert_standby_move = false;
         int right_arm_up = 0;
-
-        bool left_arm_alive = true;
-        bool left_arm_standby = true;
-        int left_arm_up = 0;
+        int right_arm_x_lock_on;
+        int right_arm_y_lock_on;
         
+
         
         bool boss_alive = true;
 
@@ -1257,6 +1271,24 @@ class MetalBoss{
         }
 
         void movement_calculations(){
+
+            iprintf("%i",left_arm_y_position_centre);
+
+            if (left_arm_standby){
+                if (left_arm_up == 1){
+                    left_arm_y_position_centre -= 1;
+                    if (left_arm_y_position_centre < standby_y_coordinate-standby_coordinate_variation){
+                        left_arm_up = 0;
+                    }
+                }
+                else{
+                    left_arm_y_position_centre += 1;
+                    if (left_arm_y_position_centre > standby_y_coordinate+standby_coordinate_variation){
+                        left_arm_up = 1;
+                    }
+                }
+            }
+
             if (right_arm_standby){
                 if (right_arm_up == 1){
                     right_arm_y_position_centre -= 1;
@@ -1273,20 +1305,77 @@ class MetalBoss{
 
             }
 
-            if (left_arm_standby){
-                if (left_arm_up == 1){
-                    left_arm_y_position_centre -= 1;
-                    if (left_arm_y_position_centre < standby_y_coordinate-standby_coordinate_variation){
-                        left_arm_up = 0;
-                    }
+            if (left_arm_laser_movement){
+
+                if (left_arm_y_lock_on < left_arm_y_position_centre){
+                        left_arm_y_position_centre -= 1;
                 }
-                else{
+                else if (left_arm_y_lock_on > left_arm_y_position_centre){
                     left_arm_y_position_centre += 1;
-                    if (left_arm_y_position_centre > standby_y_coordinate+standby_coordinate_variation){
-                        left_arm_up = 1;
+                }
+                    
+                
+                else{
+                    
+                    initiate_laser('l');
+                }
+
+            }
+
+
+            if (left_arm_revert_standby_move){
+
+                if (left_arm_y_position_centre < standby_y_coordinate){
+                        left_arm_y_position_centre += 1;
+                }
+                else if (left_arm_y_position_centre < standby_y_coordinate){
+                    left_arm_y_position_centre -= 1;
+                }
+
+                else{
+                    left_arm_revert_standby_move = false;
+                    left_arm_standby = true;
+                }
+                
+            }
+
+
+        }
+
+        void change_action_calculations(Player player){
+
+            if (left_arm_alive){
+                if (left_arm_standby == true && right_arm_standby == true){
+                    int choice_left = rand() % 2;//33% to go into slam action, 33% to go into laser action and 33% to do nothing
+                    if (choice_left == 0){
+                        left_arm_standby = false;
+                        left_arm_laser_movement = true;
+                        left_arm_x_lock_on = hitbox_x;
+                        left_arm_y_lock_on = player.get_centre_y();
+                        
                     }
+                    /*
+                    else if (choice_left == 1){
+                        left_arm_standby = false;
+                        left_arm_slam_movement = true;
+                        left_arm_x_lock_on = player.get_centre_x();
+                        left_arm_y_lock_on = hitbox_y;
+                    }
+                    */
                 }
             }
+
+        }
+
+        void initiate_laser(char arm){
+            if (arm == 'l'){
+                left_arm_laser_movement = false;
+                left_arm_revert_standby_move = true;
+            }
+
+        }
+
+        void initiate_slam(){
 
         }
 
@@ -1501,6 +1590,8 @@ bool projectile_enemy_collision(Projectile *projectile, Enemy *enemy){
 
 void area1(){
 
+    consoleDemoInit();
+
     Platform floor(128,188,256,20);
 
     Platform platform1(30,146,32,10);
@@ -1689,6 +1780,10 @@ void area1(){
             (*it)->display_position();//show location
 
             (*it)->movement_calculations();//move boss as required
+
+            if (frame % 500 == 0){
+                (*it)->change_action_calculations(player);
+            }
 
             ++it;
             
@@ -1884,7 +1979,7 @@ void area1(){
 
         //enemy spawning logic
 
-        if (enemies_spawned < 10){
+        if (enemies_spawned < 1){
 
             if((frame%150 == 0)&(frame != 0)){
 
@@ -1899,7 +1994,7 @@ void area1(){
 
         //boss spawning logic
 
-        if ((enemies_defeated == 10)& (boss_array.size() == 0)){
+        if ((enemies_defeated == 1)& (boss_array.size() == 0)){
             MetalBoss *boss = new MetalBoss();
             boss_array.insert(boss_array.begin(),boss);
         }
