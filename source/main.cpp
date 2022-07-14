@@ -300,9 +300,9 @@ class Player{
 
     private:
 
-        int GRAVITY = 10;
-        int velocity = 0;
-        int velocity_increment = 1;
+        int GRAVITY = 10; //player constant gravity
+        int velocity = 0; //current velocity
+        int velocity_increment = 1; //how much velocity increments by
         bool moving_right = false;
         bool moving_left = false;
         bool jumping = false;
@@ -321,7 +321,7 @@ class Player{
         int sprite_display_x;
         int sprite_display_y;
         int spritesheet_section = 0;
-        int frame_cap;
+        int frame_cap;//what the highest frame to be displayed in a sprite frame rotation is 
         int player_speed = 4;
 
 
@@ -1215,7 +1215,7 @@ class MetalBoss{
         bool left_arm_slam_movement = false;
         bool left_arm_laser_movement = false;
         bool left_arm_revert_standby_move = false;
-        int left_arm_up = 0;
+        int left_arm_up = 0;//int boolean if arm is moving upwards
         int left_arm_x_lock_on;
         int left_arm_y_lock_on;
         
@@ -1277,8 +1277,8 @@ class MetalBoss{
             if (left_arm_standby){
                 if (left_arm_up == 1){
                     left_arm_y_position_centre -= 1;
-                    if (left_arm_y_position_centre < standby_y_coordinate-standby_coordinate_variation){
-                        left_arm_up = 0;
+                    if (left_arm_y_position_centre < standby_y_coordinate-standby_coordinate_variation){//if the left arm has moved above(on screen above, numerically lower) its allowed value
+                        left_arm_up = 0;//set it to move down
                     }
                 }
                 else{
@@ -1289,21 +1289,7 @@ class MetalBoss{
                 }
             }
 
-            if (right_arm_standby){
-                if (right_arm_up == 1){
-                    right_arm_y_position_centre -= 1;
-                    if (right_arm_y_position_centre < standby_y_coordinate-standby_coordinate_variation){
-                        right_arm_up = 0;
-                    }
-                }
-                else{
-                    right_arm_y_position_centre += 1;
-                    if (right_arm_y_position_centre > standby_y_coordinate+standby_coordinate_variation){
-                        right_arm_up = 1;
-                    }
-                }
-
-            }
+            
 
             if (left_arm_laser_movement){
 
@@ -1340,6 +1326,58 @@ class MetalBoss{
             }
 
 
+            if (right_arm_standby){
+                if (right_arm_up == 1){
+                    right_arm_y_position_centre -= 1;
+                    if (right_arm_y_position_centre < standby_y_coordinate-standby_coordinate_variation){
+                        right_arm_up = 0;
+                    }
+                }
+                else{
+                    right_arm_y_position_centre += 1;
+                    if (right_arm_y_position_centre > standby_y_coordinate+standby_coordinate_variation){
+                        right_arm_up = 1;
+                    }
+                }
+
+            }
+
+
+            if (right_arm_laser_movement){
+
+                if (right_arm_y_lock_on < right_arm_y_position_centre){
+                        right_arm_y_position_centre -= 1;
+                }
+                else if (right_arm_y_lock_on > right_arm_y_position_centre){
+                    right_arm_y_position_centre += 1;
+                }
+                    
+                
+                else{
+                    
+                    initiate_laser('r');
+                }
+
+            }
+
+
+            if (right_arm_revert_standby_move){
+
+                if (right_arm_y_position_centre < standby_y_coordinate){
+                        right_arm_y_position_centre += 1;
+                }
+                else if (right_arm_y_position_centre < standby_y_coordinate){
+                    right_arm_y_position_centre -= 1;
+                }
+
+                else{
+                    right_arm_revert_standby_move = false;
+                    right_arm_standby = true;
+                }
+                
+            }
+
+
         }
 
         void change_action_calculations(Player player){
@@ -1365,12 +1403,40 @@ class MetalBoss{
                 }
             }
 
+        
+
+            if (right_arm_alive){
+                    if (left_arm_standby == true && right_arm_standby == true){
+                        int choice_right = rand() % 2;//33% to go into slam action, 33% to go into laser action and 33% to do nothing
+                        if (choice_right == 0){
+                            right_arm_standby = false;
+                            right_arm_laser_movement = true;
+                            right_arm_x_lock_on = hitbox_x;
+                            right_arm_y_lock_on = player.get_centre_y();
+                            
+                        }
+                        /*
+                        else if (choice_left == 1){
+                            left_arm_standby = false;
+                            left_arm_slam_movement = true;
+                            left_arm_x_lock_on = player.get_centre_x();
+                            left_arm_y_lock_on = hitbox_y;
+                        }
+                        */
+                    }
+                }
+
         }
 
         void initiate_laser(char arm){
             if (arm == 'l'){
                 left_arm_laser_movement = false;
                 left_arm_revert_standby_move = true;
+            }
+
+            if (arm == 'r'){
+                right_arm_laser_movement = false;
+                right_arm_revert_standby_move = true;
             }
 
         }
