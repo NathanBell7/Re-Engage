@@ -323,6 +323,7 @@ class Player{
         int spritesheet_section = 0;
         int frame_cap;//what the highest frame to be displayed in a sprite frame rotation is 
         int player_speed = 4;
+        int blink_countdown = 0;
 
 
     public:
@@ -383,6 +384,10 @@ class Player{
 
         int get_centre_y(){
             return y_position_centre;
+        }
+
+        int get_blink_countdown(){
+            return blink_countdown;
         }
 
         bool get_jumping(){
@@ -492,6 +497,10 @@ class Player{
                 set_all_y(y_position_centre-velocity);
                 velocity -= velocity_increment;
             }
+
+            if (blink_countdown > 0){
+                blink_countdown -= 0.2;
+            }
         }
 
         void sprite_frame_update(){
@@ -553,6 +562,34 @@ class Player{
             }
 
 
+        }
+
+        void blink(){
+            if(direction_facing == 'l'){
+
+                if ((x_position_centre - 50) < 6){
+                    x_position_centre = 6;
+                }
+
+                else{
+                    set_all_x(x_position_centre - 50);
+                }
+                
+                
+            }
+
+            if(direction_facing == 'r'){
+                if ((x_position_centre + 50) > 250){
+                    x_position_centre = 250;
+                }
+
+                else{
+                    set_all_x(x_position_centre + 50);
+                }
+
+            }
+
+            blink_countdown = 150;
         }
 
 
@@ -1416,11 +1453,11 @@ class MetalBoss{
                             
                         }
                         /*
-                        else if (choice_left == 1){
-                            left_arm_standby = false;
-                            left_arm_slam_movement = true;
-                            left_arm_x_lock_on = player.get_centre_x();
-                            left_arm_y_lock_on = hitbox_y;
+                        else if (choice_right == 1){
+                            right_arm_standby = false;
+                            right_arm_slam_movement = true;
+                            right_arm_x_lock_on = player.get_centre_x();
+                            right_arm_y_lock_on = hitbox_y;
                         }
                         */
                     }
@@ -1910,6 +1947,14 @@ void area1(){
                     tracking_reload = true;
                 }
             }
+            
+        }
+
+        if(keysDown() & KEY_L){
+            if (weapon.get_reloading() == false && player.get_blink_countdown() == 0){
+                player.blink();
+            }
+            
             
         }
 
