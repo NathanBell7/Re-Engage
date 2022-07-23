@@ -1573,8 +1573,11 @@ class MetalBoss{
                 left_arm_laser_movement = false;
                 left_arm_laser_attack = true;
 
-                Projectile *laser_top = new Projectile(2,'r','b',   left_arm_x_position_centre,left_arm_y_position_centre-60,32,70,0);
-                Projectile *laser_bottom = new Projectile(2,'r','b',left_arm_x_position_centre,left_arm_y_position_centre+62,32,60,0);
+                Projectile *laser_top = new Projectile(2,'r','b',   left_arm_x_position_centre,left_arm_y_position_centre/2,32,left_arm_y_position_centre,0);
+                Projectile *laser_bottom = new Projectile(2,'r','b',left_arm_x_position_centre,(left_arm_y_position_centre+((191-left_arm_y_position_centre)/2)),32,191-left_arm_y_position_centre,0);
+
+                
+                
 
                 lasers.insert(lasers.begin(),laser_top);
                 lasers.insert(lasers.begin(),laser_bottom);
@@ -1585,8 +1588,8 @@ class MetalBoss{
                 right_arm_laser_movement = false;
                 right_arm_laser_attack = true;
 
-                Projectile *laser_top = new Projectile(2,'l','b',   right_arm_x_position_centre,right_arm_y_position_centre-100,32,150,0);
-                Projectile *laser_bottom = new Projectile(2,'l','b',right_arm_x_position_centre,right_arm_y_position_centre+100,32,50,0);
+                Projectile *laser_top = new Projectile(2,'l','b',   right_arm_x_position_centre,right_arm_y_position_centre/2,32,right_arm_y_position_centre,0);
+                Projectile *laser_bottom = new Projectile(2,'l','b',right_arm_x_position_centre,(right_arm_y_position_centre+((191-right_arm_y_position_centre)/2)),32,191-right_arm_y_position_centre,0);
 
                 lasers.insert(lasers.begin(),laser_top);
                 lasers.insert(lasers.begin(),laser_bottom);
