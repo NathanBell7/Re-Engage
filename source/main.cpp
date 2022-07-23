@@ -1283,7 +1283,9 @@ class MetalBoss{
 
         int standby_y_coordinate = 64;
 
-        int standby_x_coordinate = 32;
+        int standby_x_coordinate_left = 32;
+
+        int standby_x_coordinate_right = 224;
 
         int standby_coordinate_variation = 16;
 
@@ -1295,10 +1297,10 @@ class MetalBoss{
             this->head_x_position_centre = 128;
             this->head_y_position_centre = 32;
 
-            this->left_arm_x_position_centre = standby_x_coordinate;
+            this->left_arm_x_position_centre = standby_x_coordinate_left;
             this->left_arm_y_position_centre = standby_y_coordinate;
 
-            this->right_arm_x_position_centre = 224;
+            this->right_arm_x_position_centre = standby_x_coordinate_right;
             this->right_arm_y_position_centre = standby_y_coordinate;
 
         }
@@ -1373,15 +1375,15 @@ class MetalBoss{
                     left_arm_y_position_centre -= 1;
                 }
 
-                if (left_arm_x_position_centre < standby_x_coordinate){
+                if (left_arm_x_position_centre < standby_x_coordinate_left){
                     left_arm_x_position_centre += 1;
                 }
 
-                if (left_arm_x_position_centre > standby_x_coordinate){
+                if (left_arm_x_position_centre > standby_x_coordinate_left){
                     left_arm_x_position_centre -= 1;
                 }
 
-                if ((left_arm_x_position_centre == standby_x_coordinate) && (left_arm_y_position_centre == standby_y_coordinate)){
+                if ((left_arm_x_position_centre == standby_x_coordinate_left) && (left_arm_y_position_centre == standby_y_coordinate)){
                     left_arm_revert_standby_move = false;
                     left_arm_standby = true;
                 }
@@ -1424,21 +1426,73 @@ class MetalBoss{
             }
 
 
+
+            if (right_arm_laser_attack){
+
+                if (right_arm_x_position_centre > 56){
+                    right_arm_x_position_centre -= 2;
+                }
+                else{
+                    
+                    right_arm_laser_attack = false;
+                    right_arm_revert_standby_move = true;
+
+                }
+            }
+
+
             if (right_arm_revert_standby_move){
 
                 if (right_arm_y_position_centre < standby_y_coordinate){
                         right_arm_y_position_centre += 1;
                 }
-                else if (right_arm_y_position_centre > standby_y_coordinate){
+                if (right_arm_y_position_centre > standby_y_coordinate){
                     right_arm_y_position_centre -= 1;
                 }
 
-                else{
+                if (right_arm_x_position_centre < standby_x_coordinate_right){
+                    right_arm_x_position_centre += 1;
+                }
+
+                if (right_arm_x_position_centre > standby_x_coordinate_right){
+                    right_arm_x_position_centre -= 1;
+                }
+
+                if ((right_arm_x_position_centre == standby_x_coordinate_right) && (right_arm_y_position_centre == standby_y_coordinate)){
                     right_arm_revert_standby_move = false;
                     right_arm_standby = true;
                 }
                 
             }
+
+
+
+
+
+            /*if (left_arm_revert_standby_move){
+
+                if (left_arm_y_position_centre < standby_y_coordinate){
+                        left_arm_y_position_centre += 1;
+                }
+
+                if (left_arm_y_position_centre > standby_y_coordinate){
+                    left_arm_y_position_centre -= 1;
+                }
+
+                if (left_arm_x_position_centre < standby_x_coordinate_left){
+                    left_arm_x_position_centre += 1;
+                }
+
+                if (left_arm_x_position_centre > standby_x_coordinate_left){
+                    left_arm_x_position_centre -= 1;
+                }
+
+                if ((left_arm_x_position_centre == standby_x_coordinate_left) && (left_arm_y_position_centre == standby_y_coordinate)){
+                    left_arm_revert_standby_move = false;
+                    left_arm_standby = true;
+                }
+                
+            }*/
 
 
         }
@@ -1499,7 +1553,7 @@ class MetalBoss{
 
             if (arm == 'r'){
                 right_arm_laser_movement = false;
-                right_arm_revert_standby_move = true;
+                right_arm_laser_attack = true;
             }
 
         }
