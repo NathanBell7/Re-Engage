@@ -616,12 +616,13 @@ class Projectile{
     int width;
     int height;
     bool exist = true;
+    char type_of_user;
 
 
 
     public:
 
-    Projectile(int projectile_speed, char direction_facing, int x_position_centre, int y_position_centre, int width, int height, int damage){
+    Projectile(int projectile_speed, char direction_facing,char type_of_user, int x_position_centre, int y_position_centre, int width, int height, int damage){
 
         if(direction_facing == 'r'){
             this->projectile_speed = projectile_speed;
@@ -641,14 +642,25 @@ class Projectile{
 
         this->damage = damage;
 
+        this->type_of_user = type_of_user;
+
+        this->width = width;
+
     }
 
 
     void display_projectile(){
 
         glBegin2D();/*opens gl for 2d creation*/
+        
+        if (type_of_user == 'p'){
+            glSprite(x_position_left, y_position_top,GL_FLIP_NONE,Projectile_Sprite);
+        }
+        else{
+            glBoxFilled(x_position_left,y_position_top,x_position_right,y_position_bottom,RGB15(255, 255, 0));
+        }
 
-        glSprite(x_position_left, y_position_top,GL_FLIP_NONE,Projectile_Sprite);
+        
 
         glEnd2D();/*ends gl for 2d creation*/
 
@@ -658,8 +670,9 @@ class Projectile{
     void update_position(){
 
         x_position_centre += projectile_speed;
-        x_position_left = x_position_centre - (width/2);
         x_position_right = x_position_centre + (width/2);
+        x_position_left = x_position_centre - (width/2);
+        
 
         if ((x_position_centre > 256)|(x_position_centre < 0)){
             exist = false;
@@ -701,6 +714,10 @@ class Projectile{
 
     int get_damage(){
         return damage;
+    }
+
+    int get_width(){
+        return width;
     }
 
     void set_exist(bool new_value){
@@ -841,11 +858,11 @@ class Weapon{
         Projectile* create_projectile(){
 
             if(direction_facing == 'r'){
-                Projectile *new_projectile = new Projectile(projectile_speed,direction_facing, x_position_centre+24,y_position_centre-1,10,5,damage);
+                Projectile *new_projectile = new Projectile(projectile_speed,direction_facing, 'p',x_position_centre+24,y_position_centre-1,10,5,damage);
                 return new_projectile;
             }
             else{
-                Projectile *new_projectile = new Projectile(projectile_speed,direction_facing, x_position_centre-20,y_position_centre-1,10,5,damage);
+                Projectile *new_projectile = new Projectile(projectile_speed,direction_facing, 'p',x_position_centre-20,y_position_centre-1,10,5,damage);
                 return new_projectile;
             }
 
@@ -1268,8 +1285,9 @@ class MetalBoss{
         int right_arm_up = 0;
         int right_arm_x_lock_on;
         int right_arm_y_lock_on;
-        
 
+        std::list<Projectile*> lasers;
+        
         
         bool boss_alive = true;
 
@@ -1353,7 +1371,7 @@ class MetalBoss{
 
             if (left_arm_laser_attack){
 
-                if (left_arm_x_position_centre < 200){
+                if (left_arm_x_position_centre < 224){
                     left_arm_x_position_centre += 2;
                 }
                 else{
@@ -1429,7 +1447,7 @@ class MetalBoss{
 
             if (right_arm_laser_attack){
 
-                if (right_arm_x_position_centre > 56){
+                if (right_arm_x_position_centre > 32){
                     right_arm_x_position_centre -= 2;
                 }
                 else{
@@ -1466,33 +1484,37 @@ class MetalBoss{
             }
 
 
+            for (std::list<Projectile*>::iterator it = lasers.begin(); it != lasers.end();){
 
-
-
-            /*if (left_arm_revert_standby_move){
-
-                if (left_arm_y_position_centre < standby_y_coordinate){
-                        left_arm_y_position_centre += 1;
-                }
-
-                if (left_arm_y_position_centre > standby_y_coordinate){
-                    left_arm_y_position_centre -= 1;
-                }
-
-                if (left_arm_x_position_centre < standby_x_coordinate_left){
-                    left_arm_x_position_centre += 1;
-                }
-
-                if (left_arm_x_position_centre > standby_x_coordinate_left){
-                    left_arm_x_position_centre -= 1;
-                }
-
-                if ((left_arm_x_position_centre == standby_x_coordinate_left) && (left_arm_y_position_centre == standby_y_coordinate)){
-                    left_arm_revert_standby_move = false;
-                    left_arm_standby = true;
-                }
+                iprintf("\n");
+                iprintf("%i",(*it)->get_x_position_centre());
                 
-            }*/
+
+
+                (*it)->display_projectile();
+                (*it)->update_position();
+
+                
+                
+                if (((*it)->get_x_position_centre()>224)|((*it)->get_x_position_centre()<32)){
+                    (*it)->set_exist(false);
+                }
+
+                
+
+                if(((*it)->get_exist())==false){
+                it = lasers.erase(it);
+                }
+
+                else{
+                    it++;
+                }
+
+                
+                
+                
+            }
+
 
 
         }
@@ -1547,13 +1569,28 @@ class MetalBoss{
 
         void initiate_laser(char arm){
             if (arm == 'l'){
+
                 left_arm_laser_movement = false;
                 left_arm_laser_attack = true;
+
+                Projectile *laser_top = new Projectile(2,'r','b',   left_arm_x_position_centre,left_arm_y_position_centre-60,32,70,0);
+                Projectile *laser_bottom = new Projectile(2,'r','b',left_arm_x_position_centre,left_arm_y_position_centre+62,32,60,0);
+
+                lasers.insert(lasers.begin(),laser_top);
+                lasers.insert(lasers.begin(),laser_bottom);
+
             }
 
             if (arm == 'r'){
                 right_arm_laser_movement = false;
                 right_arm_laser_attack = true;
+
+                Projectile *laser_top = new Projectile(2,'l','b',   right_arm_x_position_centre,right_arm_y_position_centre-100,32,150,0);
+                Projectile *laser_bottom = new Projectile(2,'l','b',right_arm_x_position_centre,right_arm_y_position_centre+100,32,50,0);
+
+                lasers.insert(lasers.begin(),laser_top);
+                lasers.insert(lasers.begin(),laser_bottom);
+
             }
 
         }
@@ -1592,6 +1629,13 @@ class MetalBoss{
 
             glEnd2D();
 
+
+        }
+
+
+        std::list<Projectile*> get_lasers(){
+
+            return lasers;
 
         }
 
@@ -1831,8 +1875,6 @@ void area1(){
 
 
 
-
-
         if (frame == 10){
             //increase brightness to normal when entering area
             new_screen_brightness_increase();
@@ -1967,6 +2009,8 @@ void area1(){
             if (frame % 500 == 0){
                 (*it)->change_action_calculations(player);
             }
+
+            iprintf("%i",(*it)->get_lasers().size());
 
             ++it;
             
